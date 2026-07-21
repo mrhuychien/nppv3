@@ -37,6 +37,9 @@ npm run check
 - Đăng nhập email / username / SĐT qua Server Action tương thích RPC v2.
 - Domain contracts: trạng thái đơn, edit-while-picking, UOM, permission precedence,
   hai đường ray fulfillment và schema payload của RPC v2.
+- Server Action gates cho tạo đơn, tạo bundle xuất kho, xác nhận bàn giao, thu tiền
+  tự giao và quyết toán tài xế: bắt buộc profile đang hoạt động, Zod validation và
+  idempotency key; lỗi database không bị trả thẳng ra UI.
 - Migration `015_post_self_delivery_atomic.sql` thay chuỗi request phía trình
   duyệt của bước tự giao bằng một transaction có row lock và rollback.
 - Unit/contract tests cho các bất biến có rủi ro cao.

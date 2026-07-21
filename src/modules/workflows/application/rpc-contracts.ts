@@ -82,3 +82,30 @@ export const settleDriverDeliveryPayloadSchema = z.object({
   ),
   notes: z.string().trim().optional(),
 });
+
+export const createSalesOrderActionSchema = z.object({
+  payload: createSalesOrderPayloadSchema,
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const createStockOutBundleActionSchema = z.object({
+  payload: createStockOutBundlePayloadSchema,
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const collectSelfDeliveryActionSchema = z.object({
+  entryId: uuid,
+  payload: collectSelfDeliveryPayloadSchema,
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const settleDriverDeliveryActionSchema = z.object({
+  deliveryId: uuid,
+  payload: settleDriverDeliveryPayloadSchema,
+  idempotencyKey: idempotencyKeySchema,
+});
+
+export const confirmDriverHandoverActionSchema = z.object({
+  handoverId: uuid,
+  idempotencyKey: idempotencyKeySchema,
+});
