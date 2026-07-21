@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  collectSelfDeliveryActionSchema,
+  confirmDriverHandoverActionSchema,
   createSalesOrderPayloadSchema,
+  createSalesOrderActionSchema,
   createStockOutBundlePayloadSchema,
+  settleDriverDeliveryActionSchema,
 } from "@/modules/workflows/application/rpc-contracts";
 
 const customerId = "0d3035b1-693b-4e62-8ca0-bf59d45830a7";
@@ -31,5 +35,50 @@ describe("legacy RPC contracts", () => {
     expect(
       createStockOutBundlePayloadSchema.parse({ order_ids: [orderId] }).order_ids,
     ).toEqual([orderId]);
+  });
+
+  it("requires a stable idempotency key at the application boundary", () => {
+    const payload = {
+      customer_id: customerId,
+      lines: [
+        {
+          product_id: productId,
+          unit_name: "thùng",
+          quantity: 1,
+          unit_price: 480000,
+        },
+      ],
+    };
+
+    expect(() => createSalesOrderActionSchema.parse({ payload })).toThrow();
+    expect(
+      createSalesOrderActionSchema.parse({
+        payload,
+        idempotencyKey: "f2ee3310-9a8f-4a7c-bd50-cab9cab9476a",
+      }).idempotencyKey,
+    ).toBe("f2ee3310-9a8f-4a7c-bd50-cab9cab9476a");
+  });
+
+  it("validates identifiers for collection, settlement, and handover", () => {
+    expect(() =>
+      collectSelfDeliveryActionSchema.parse({
+        entryId: "bad-id",
+        payload: { rows: [] },
+        idempotencyKey: "f2ee3310-9a8f-4a7c-bd50-cab9cab9476a",
+      }),
+    ).toThrow();
+    expect(() =>
+      settleDriverDeliveryActionSchema.parse({
+        deliveryId: "bad-id",
+        payload: { lines: [] },
+        idempotencyKey: "f2ee3310-9a8f-4a7c-bd50-cab9cab9476a",
+      }),
+    ).toThrow();
+    expect(() =>
+      confirmDriverHandoverActionSchema.parse({
+        handoverId: orderId,
+        idempotencyKey: "bad-key",
+      }),
+    ).toThrow();
   });
 });

@@ -1,8 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  executeAuthenticatedRpc,
+  invalidWorkflowInput,
+} from "@/modules/workflows/application/execute-authenticated-rpc";
 
 const inputSchema = z.object({ entryId: z.string().uuid() });
 
@@ -14,30 +18,27 @@ export async function postSelfDelivery(
   input: z.input<typeof inputSchema>,
 ): Promise<PostSelfDeliveryResult> {
   const parsed = inputSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "INVALID_ENTRY_ID" };
-
-  const supabase = await createSupabaseServerClient();
-  const { data: claims, error: authError } = await supabase.auth.getClaims();
-  if (authError || !claims?.claims?.sub) {
-    return { ok: false, error: "NOT_AUTHENTICATED" };
+  if (!parsed.success) {
+    return { ok: false, error: invalidWorkflowInput().error.code };
   }
 
-  const { data, error } = await supabase.rpc("post_self_delivery", {
-    p_entry_id: parsed.data.entryId,
+  const result = await executeAuthenticatedRpc({
+    execute: (client) =>
+      client.rpc("post_self_delivery", { p_entry_id: parsed.data.entryId }),
+    outputSchema: z.object({
+      delivery_id: z.string().uuid(),
+      idempotent: z.boolean().optional(),
+    }),
   });
-  if (error) return { ok: false, error: error.message };
+  if (!result.ok) return { ok: false, error: result.error.code };
 
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    return { ok: false, error: "INVALID_RPC_RESPONSE" };
-  }
-  const deliveryId = data.delivery_id;
-  if (typeof deliveryId !== "string") {
-    return { ok: false, error: "DELIVERY_NOT_CREATED" };
-  }
+  revalidatePath("/orders");
+  revalidatePath("/inventory/stock-out");
+  revalidatePath("/deliveries");
 
   return {
     ok: true,
-    deliveryId,
-    idempotent: data.idempotent === true,
+    deliveryId: result.data.delivery_id,
+    idempotent: result.data.idempotent === true,
   };
 }

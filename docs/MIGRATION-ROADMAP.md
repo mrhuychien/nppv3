@@ -11,8 +11,8 @@ contract test, PostgreSQL integration test và UAT vai trò tương ứng đạt
 | Mốc | Phạm vi | Điều kiện hoàn thành |
 |---|---|---|
 | M0 — Contract | inventory repo, đóng băng workflow/schema/route, domain tests | Hoàn thành trong nền hiện tại |
-| M1 — Platform | auth, tenant DAL, permission, shell, observability, CI | JWT `getClaims`, cross-org test, build sạch |
-| M2 — Order-to-cash | customer/product search, tạo/duyệt đơn, stock-out, self-delivery, handover, collect/settle | 2 rail E2E + concurrency/rollback test |
+| M1 — Platform | auth, tenant DAL, permission, shell, observability, CI | Đang làm: JWT `getClaims`, shell và CI đã có; còn cross-org integration test/observability |
+| M2 — Order-to-cash | customer/product search, tạo/duyệt đơn, stock-out, self-delivery, handover, collect/settle | Đang làm: contract + mutation gates + atomic self-delivery đã có; còn UI dữ liệu thật, 2 rail E2E và concurrency/rollback test |
 | M3 — Inventory/purchasing | stock-in, batch, stocktake approval, PO/AP/supplier return | tồn/lô/AP khớp Golden Master |
 | M4 — Sales force/HR | PJP, visit, commission, attendance, payroll v1 formula | payroll snapshot khớp dữ liệu chuẩn |
 | M5 — Reporting/settings | reports, Excel, MISA, user/QR/permission/config | số liệu và export khớp v2 |
