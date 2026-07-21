@@ -1,0 +1,13 @@
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  resolve: { tsconfigPaths: true },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
+    coverage: {
+      reporter: ["text", "json-summary"],
+      include: ["src/modules/**/domain/**/*.ts"],
+    },
+  },
+});
